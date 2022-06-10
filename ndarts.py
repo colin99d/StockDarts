@@ -68,11 +68,12 @@ def generate_data(base: List[str], covs: List[List[str]]):
         }
 
 
-covariates = [["AAPL", "Open"], ["MSFT", "Close"], ["TSLA", "Close"]]
+tickers = ["MSFT", "TSLA", "AMZN", "IWV", "A", "T", "F"]
+covariates = [["AAPL", "Open"]] + [[x, "Close"] for x in tickers]
 data_dict = generate_data(["AAPL", "Close"], covariates)
 
 
-parameters = {"forecast_horizon": [10, 20, 30, 40]}
+parameters = {"input_chunk_length": [2], "output_chunk_length": [2]}
 
 model_nbeats = NBEATSModel(
     input_chunk_length=30,
@@ -87,30 +88,13 @@ model_nbeats = NBEATSModel(
     batch_size=800,
     model_name="nbeats_run",
 )
-"""
-parameters = dict(
-    input_chunk_length=30,
-    output_chunk_length=7,
-    generic_architecture=True,
-    num_stacks=10,
-    num_blocks=1,
-    num_layers=4,
-    layer_widths=512,
-    n_epochs=10,
-    nr_epochs_val_period=1,
-    batch_size=800,
-    model_name="nbeats_run",
-    forecast_horizon=7,
-)
 
-model_nbeats = NBEATSModel.gridsearch(parameters=parameters, series=train)
-"""
-
-model_nbeats.fit(
-    data_dict["base_train"],
+model_nbeats.gridsearch(
+    parameters=parameters,
+    series=data_dict["base_train"],
     val_series=data_dict["base_test"],
     past_covariates=data_dict["cov_train"],
-    val_past_covariates=data_dict["cov_test"],
+    # val_past_covariates=data_dict["cov_test"],
     verbose=True,
 )
 
